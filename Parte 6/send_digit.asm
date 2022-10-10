@@ -13,11 +13,11 @@
 
 //*********************************************
 //	send_digit
-//	Recibe un valor y el dígito y lo muestra en el display.
-//	Argumentos de entrada: valor (0:9) en r16 / dígito (1-4) en r17.
+//	Recibe un valor y el dígito y lo muestra en el display. Valor 10 para limpiar el dígito.
+//	Argumentos de entrada: valor (0:9 o 10) en r16 / dígito (1-4) en r17.
 //*********************************************
 send_digit:
-	cpi ValueIn, 10	//Control para evitar ingresos mayores a 9
+	cpi ValueIn, 11	//Control para evitar ingresos mayores a 10
 	brge end
 	cpi (DigitIn - 1), 4
 	brge end
@@ -38,7 +38,7 @@ send_digit:
 
 //**********************************************************
 //	value_to_ss
-//	Toma un valor de ingreso y lo convierte a su valor en el display de ss.
+//	Toma un valor de ingreso y lo convierte a su valor en el display de ss. 10 para limpiar.
 //	Argumento de ingreso y retorno en r16. Valores válidos (0:9)
 //**********************************************************
 value_to_ss:
@@ -100,8 +100,8 @@ send_byte:
 	ret
 
 
-ss_value:		//Código en hexa correspondiente al display de cada número (0:9)
-	.db 0x03, 0x9F, 0x25, 0x0D, 0x99, 0x49, 0x41, 0x1F, 0x01, 0x19
+ss_value:		//Código en hexa correspondiente al display de cada número (0:9 o 10 para borrar)
+	.db 0x03, 0x9F, 0x25, 0x0D, 0x99, 0x49, 0x41, 0x1F, 0x01, 0x19, 0xFF
 
 display_digit_value:	//Código en hexa correspondiente al dígito (1:4)
 	.db 0x80, 0x40, 0x20, 0x10
