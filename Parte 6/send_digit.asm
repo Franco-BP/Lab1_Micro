@@ -2,6 +2,15 @@
 ; Send_digit.asm
 ;
 
+.equ B0 = (1<<0)
+.equ B1 = (1<<1)
+.equ B2 = (1<<2)
+.equ B3 = (1<<3)
+.equ B4 = (1<<4)
+.equ B5 = (1<<5)
+.equ B6 = (1<<6) 
+.equ B7 = (1<<7) 
+
 .def ValueIn = r16
 .def DigitIn = r17
 
