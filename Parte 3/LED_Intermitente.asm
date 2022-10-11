@@ -4,8 +4,6 @@
 
 .org 0
 
-jmp start //salta al jump
-
 .equ B0 = (1<<0)
 .equ B1 = (1<<1)
 .equ B2 = (1<<2)
