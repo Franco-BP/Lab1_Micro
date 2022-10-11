@@ -34,7 +34,7 @@ start:
 
 // ***************************************
 // delay_500ms
-// Esta función hace un delay de 500ms.
+// Esta funciÃ³n hace un delay de 500ms.
 // Sin argumento de entrada.
 // ***************************************
 delay_500ms:
