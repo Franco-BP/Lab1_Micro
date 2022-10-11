@@ -1,12 +1,7 @@
 ;
-; Micro.asm
-;
-; Created: 8/31/2022 12:06:32 PM
-; Author : pijua
+; LED_Intermitente.asm
 ;
 
-
-; Replace with your application code
 .org 0
 
 jmp start //salta al jump
@@ -19,18 +14,24 @@ jmp start //salta al jump
 .equ B5 = (1<<5)
 .equ B6 = (1<<6) 
 .equ B7 = (1<<7) 
-.equ 
+
+.equ LED1 = B5
 
 .def Contador1 = r23
 .def Contador2 = r22
 .def Contador3 = r21
 
-out DDRB 
+out DDRB LED1
 
 start:
-    ldi r20,B5
-	out PORTD, r20
-
+    out PORTB (LED1 XOR LED1)
+    rcall delay_500ms
+    
+    out PORTB LED1
+    rcall delay_500ms
+    
+    rjmp start
+    
 
 // ***************************************
 // delay_500ms
