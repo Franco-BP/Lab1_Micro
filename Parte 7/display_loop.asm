@@ -48,8 +48,8 @@ loop:
 
 //*********************************************
 //	send_digit
-//	Recibe un valor y el dígito y lo muestra en el display. Valor 10 para limpiar el dígito.
-//	Argumentos de entrada: valor (0:9 o 10) en r16 / dígito (1-4) en r17.
+//	Recibe un valor y el dÃ­gito y lo muestra en el display. Valor 10 para limpiar el dÃ­gito.
+//	Argumentos de entrada: valor (0:9 o 10) en r16 / dÃ­gito (1-4) en r17.
 //*********************************************
 send_digit:
 	cpi ValueIn, 11	//Control para evitar ingresos mayores a 10
@@ -74,7 +74,7 @@ send_digit:
 //**********************************************************
 //	value_to_ss
 //	Toma un valor de ingreso y lo convierte a su valor en el display de ss. 10 para limpiar.
-//	Argumento de ingreso y retorno en r16. Valores válidos (0:9)
+//	Argumento de ingreso y retorno en r16. Valores vÃ¡lidos (0:9)
 //**********************************************************
 value_to_ss:
 	ldi ZL, LOW(2*ss_value)
@@ -89,7 +89,7 @@ value_to_ss:
 //**********************************************************
 //	digit_to_display:
 //	Toma un digito de ingreso y lo convierte a su valor en el display.
-//	Argumento de entrada y retorno en r17. Valores válidos (1:4)
+//	Argumento de entrada y retorno en r17. Valores vÃ¡lidos (1:4)
 //**********************************************************
 digit_to_display:
 	ldi ZL, LOW(2*display_digit_value)
@@ -104,7 +104,7 @@ digit_to_display:
 
 //*************************************************
 // send_byte
-// Esta función toma un byte de ingreso y lo envía al 74HC595
+// Esta funciÃ³n toma un byte de ingreso y lo envÃ­a al 74HC595
 // Argumento de entrada r16.
 //*************************************************
 
@@ -128,15 +128,15 @@ send_byte:
 
 		dec TimesCounter
 		cpi TimesCounter, 0
-		brne loadLoop		//Finaliza el Loop luego de cargar el último bit (8 veces)
+		brne loadLoop		//Finaliza el Loop luego de cargar el Ãºltimo bit (8 veces)
 	
 	pop SerialData
 	pop TimesCounter
 	ret
 
 
-ss_value:		//Código en hexa correspondiente al display de cada número (0:9 o 10 para borrar)
+ss_value:		//CÃ³digo en hexa correspondiente al display de cada nÃºmero (0:9 o 10 para borrar)
 	.db 0x03, 0x9F, 0x25, 0x0D, 0x99, 0x49, 0x41, 0x1F, 0x01, 0x19, 0xFF
 
-display_digit_value:	//Código en hexa correspondiente al dígito (1:4)
+display_digit_value:	//CÃ³digo en hexa correspondiente al dÃ­gito (1:4)
 	.db 0x80, 0x40, 0x20, 0x10
