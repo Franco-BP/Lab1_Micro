@@ -28,7 +28,8 @@
 send_digit:
 	cpi ValueIn, 11	//Control para evitar ingresos mayores a 10
 	brge end
-	cpi (DigitIn - 1), 4
+	dec DigitIn	//Tanto para la lista (.db) como para el control, nos sirve que Digit sea de 0 -> 3
+	cpi DigitIn, 4
 	brge end
 
 	rcall value_to_ss	//ingreso y retorno en r16 
@@ -63,13 +64,12 @@ value_to_ss:
 //**********************************************************
 //	digit_to_display:
 //	Toma un digito de ingreso y lo convierte a su valor en el display.
-//	Argumento de entrada y retorno en r17. Valores válidos (1:4)
+//	Argumento de entrada y retorno en r17. Valores válidos (0:3)
 //**********************************************************
 digit_to_display:
 	ldi ZL, LOW(2*display_digit_value)
 	ldi ZH, HIGH(2*display_digit_value)
 
-	dec DigitIn
 	add ZL, DigitIn
 	adc ZH, 0
 	lpm DigitIn, Z
