@@ -40,7 +40,7 @@ encendido:
 
 	in Read, PINC
 	andi Read, S1
-	cpi Read, 0		//El input en 0 (LOW) es cuando se apreta el bot髇
+	cpi Read, 0		//El input en 0 (LOW) es cuando se apreta el bot贸n
 	breq apagar
 
 	ldi OutRegister, 0xFF
@@ -74,7 +74,7 @@ apagar:
 	apagarloop:
 		in Read, PINC 
 		andi Read, S1
-		cpi Read, 2		//El input en 2 (HIGH) es cuando se suelta el bot髇
+		cpi Read, 2		//El input en 2 (HIGH) es cuando se suelta el bot贸n
 		breq apagado
 		nop
 		nop
@@ -86,7 +86,7 @@ encender:
 	encenderloop:
 		in Read, PINC 
 		andi Read, S1
-		cpi Read, 2		//El input en 2 (HIGH) es cuando se suelta el bot髇
+		cpi Read, 2		//El input en 2 (HIGH) es cuando se suelta el bot贸n
 		breq encendido
 		nop
 		nop
@@ -100,7 +100,7 @@ encender:
 
 // ***************************************
 // delay_1s
-// Esta funci髇 hace un delay de 1s.
+// Esta funci贸n hace un delay de 1s.
 // Sin argumento de entrada.
 // ***************************************
 delay_1s:
