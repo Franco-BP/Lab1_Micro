@@ -11,9 +11,10 @@
 .equ B6 = (1<<6) 
 .equ B7 = (1<<7) 
 
-.equ Shift_Clock = B1	// SDI = B0 // Serial Ck = B1 // Latch Ck = B4
-.equ Latch_Clock = B4
+.equ SHIFT_CLOCK = B1	// SDI = B0 // Serial Ck = B1 // Latch Ck = B4
+.equ LATCH_CLOCK = B4
 
+.def PortOut = r20
 .def ValueIn = r16
 .def DigitIn = r17
 
@@ -76,7 +77,8 @@ send_digit:
 	mov r16, r17
 	rcall send_byte
 
-	out PORTD, Latch_Clock
+	ldi PortOut, LATCH_CLOCK
+	out PORTD, PortOut
 
 	end:
 		ret
@@ -133,12 +135,12 @@ send_byte:
 
 		out PORTD, SerialData
 
-// Da error el operando +, al igual que abajo, pero no se como arreglarlo
-		out PORTD, (SerialData + Shift_Clock)
+		ldi PortOut, SHIFT_CLOCK
+		OR PortOut, SerialData
+		out PORTD, PortOut
 		nop		//Delay necesario para evitar fallos con la carga del dato
 		nop
-		out PORTD, (SerialData)
-//		out PORTD, (SerialData + (Shift_Clock XOR Shift_Clock))
+		out PORTD, SerialData //(Shift_Clock XOR Shift_Clock))
 
 		dec TimesCounter
 		cpi TimesCounter, 0
@@ -151,7 +153,7 @@ send_byte:
 
 //Código en hexa correspondiente al display de cada número (0:9 o 10 para borrar)
 ss_value:
-	.db 0x03, 0x9F, 0x25, 0x0D, 0x99, 0x49, 0x41, 0x1F, 0x01, 0x19, 0xFF
+	.db 0x03, 0x9F, 0x25, 0x0D, 0x99, 0x49, 0x41, 0x1F, 0x01, 0x19, 0xFF, 0x00	//Se agrega 0x00 para evitar padding
 
 //Código en hexa correspondiente al dígito (1:4)
 display_digit_value:
