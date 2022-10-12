@@ -34,6 +34,7 @@ loop:
 
 	ldi ValueIn, 2
 	ldi DigitIn, 2
+	rcall send_digit
 	// Necesitamos un delay de 2ms
 	ldi ContadorIn, 1
 	rcall delay_ms
@@ -41,16 +42,17 @@ loop:
 	ldi ValueIn, 1
 	ldi DigitIn, 1
 	rcall send_digit
-
 	//Necesitamos un delay de 2 ms
 	ldi ContadorIn, 1
 	rcall delay_ms
-	inc DigitIn
+	
+	ldi ValueIn, 2
+	ldi DigitIn, 2
 	rcall send_digit
-
 	// Necesitamos un delay de 2ms
 	ldi ContadorIn, 1
 	rcall delay_ms
+
 	rjmp loop
 
 
