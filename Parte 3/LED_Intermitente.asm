@@ -15,17 +15,21 @@
 
 .equ LED1 = B5
 
+.def OutRegister = r20
 .def Contador1 = r23
 .def Contador2 = r22
 .def Contador3 = r21
 
-out DDRB LED1
+ldi OutRegister, LED1
+out DDRB, OutRegister
 
 start:
-    out PORTB (LED1 XOR LED1)
+	ldi OutRegister, (LED1^LED1)
+    out PORTB, OutRegister
     rcall delay_500ms
     
-    out PORTB LED1
+	ldi OutRegister, LED1
+    out PORTB, OutRegister
     rcall delay_500ms
     
     rjmp start
