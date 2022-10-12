@@ -17,25 +17,25 @@
 .def ValueIn = r16
 .def DigitIn = r17
 
-.def TimesCounter = r17
+.def TimesCounter = r19
 .def SerialData = r18
 
 .def Contador1 = r23
 .def Contador2 = r22
-.def ContadorIn = Z		
+.def ContadorIn = r24
 
 loop:
 	ldi ValueIn, 1
 	ldi DigitIn, 1
 	rcall send_digit
 	// Necesitamos un delay de 2ms
-	ldi ZL, 2
+	ldi ContadorIn, 1
 	rcall delay_ms
 
 	ldi ValueIn, 2
 	ldi DigitIn, 2
 	// Necesitamos un delay de 2ms
-	ldi ZL, 2
+	ldi ContadorIn, 1
 	rcall delay_ms
 
 	ldi ValueIn, 1
@@ -43,13 +43,13 @@ loop:
 	rcall send_digit
 
 	//Necesitamos un delay de 2 ms
-	ldi ZL, 2
+	ldi ContadorIn, 1
 	rcall delay_ms
 	inc DigitIn
 	rcall send_digit
 
 	// Necesitamos un delay de 2ms
-	ldi ZL, 2
+	ldi ContadorIn, 1
 	rcall delay_ms
 	rjmp loop
 
@@ -130,10 +130,13 @@ send_byte:
 		adc SerialData, 0
 
 		out PORTD, SerialData
+
+// Da error el operando +, al igual que abajo, pero no se como arreglarlo
 		out PORTD, (SerialData + Shift_Clock)
 		nop		//Delay necesario para evitar fallos con la carga del dato
 		nop
-		out PORTD, (SerialData + (Shift_Clock XOR Shift_Clock))
+		out PORTD, (SerialData)
+//		out PORTD, (SerialData + (Shift_Clock XOR Shift_Clock))
 
 		dec TimesCounter
 		cpi TimesCounter, 0
@@ -154,16 +157,16 @@ display_digit_value:
 
 
 // ***************************************
-// delay_ms
-// Esta función hace un delay de 1ms, repitiéndose una cantidad de veces dada por el ingreso.
-// Argumento de entrada en r30:r31 (Z). Valores Válidos (1:)
+// delay_x2ms
+// Esta función hace un delay de 2ms, repitiéndose una cantidad de veces dada por el ingreso.
+// Argumento de entrada en r24. Valores Válidos (1:255)
 // ***************************************
 delay_ms:
 	push Contador1
 	push Contador2
 	
 	ldi Contador1, 255	// 1 clk
-	ldi Contador2, 21	// 1 clk
+	ldi Contador2, 22	// 1 clk
 	// Estos 3 clks se agregan al final de la cuenta, porque no estan loopeados
 
 	loop1:
@@ -185,7 +188,7 @@ delay_ms:
 			ldi Contador1, 255	// 1 clk
 			ldi Contador2, 21	// 1 clk
 
-			cpi Z, 0	// 1 clk
+			cpi ContadorIn, 0	// 1 clk
 			brne loop1	// 1/2 clk
 			// Se hace 41 veces el loop de 5 clks y repite 41 veces el ciclo anterior de 196.095 clks
 			//El ciclo demora 8.040.100 clks = 0,5025 s
