@@ -62,8 +62,8 @@ loop:
 
 //*********************************************
 //	send_digit
-//	Recibe un valor y el dígito y lo muestra en el display. Valor 10 para limpiar el dígito.
-//	Argumentos de entrada: valor (0:9 o 10) en r16 / dígito (1-4) en r17.
+//	Recibe un valor y el dÃ­gito y lo muestra en el display. Valor 10 para limpiar el dÃ­gito.
+//	Argumentos de entrada: valor (0:9 o 10) en r16 / dÃ­gito (1-4) en r17.
 //*********************************************
 send_digit:
 	cpi ValueIn, 11	//Control para evitar ingresos mayores a 10
@@ -90,7 +90,7 @@ send_digit:
 //**********************************************************
 //	value_to_ss
 //	Toma un valor de ingreso y lo convierte a su valor en el display de ss. 10 para limpiar.
-//	Argumento de ingreso y retorno en r16. Valores válidos (0:9)
+//	Argumento de ingreso y retorno en r16. Valores vÃ¡lidos (0:9)
 //**********************************************************
 value_to_ss:
   push ADCRegister
@@ -110,7 +110,7 @@ value_to_ss:
 //**********************************************************
 //	digit_to_display:
 //	Toma un digito de ingreso y lo convierte a su valor en el display.
-//	Argumento de entrada y retorno en r17. Valores válidos (0:3)
+//	Argumento de entrada y retorno en r17. Valores vÃ¡lidos (0:3)
 //**********************************************************
 digit_to_display:
   push ADCRegister
@@ -129,7 +129,7 @@ digit_to_display:
 
 //*************************************************
 // send_byte
-// Esta función toma un byte de ingreso y lo envía al 74HC595
+// Esta funciÃ³n toma un byte de ingreso y lo envÃ­a al 74HC595
 // Argumento de entrada r16.
 //*************************************************
 
@@ -159,7 +159,7 @@ send_byte:
 
 		dec TimesCounter
 		cpi TimesCounter, 0
-		brne loadLoop		//Finaliza el Loop luego de cargar el último bit (8 veces)
+		brne loadLoop		//Finaliza el Loop luego de cargar el Ãºltimo bit (8 veces)
 	
   pop ADCRegister
   pop PortOut
@@ -168,19 +168,19 @@ send_byte:
 	ret
 
 
-//Código en hexa correspondiente al display de cada número (0:9 o 10 para borrar)
+//CÃ³digo en hexa correspondiente al display de cada nÃºmero (0:9 o 10 para borrar)
 ss_value:
 	.db 0x03, 0x9F, 0x25, 0x0D, 0x99, 0x49, 0x41, 0x1F, 0x01, 0x19, 0xFF, 0x00	//Se agrega 0x00 para evitar padding
 
-//Código en hexa correspondiente al dígito (1:4)
+//CÃ³digo en hexa correspondiente al dÃ­gito (1:4)
 display_digit_value:
 	.db 0x80, 0x40, 0x20, 0x10
 
 
 // ***************************************
 // delay_ms
-// Esta función hace un delay de 2ms, repitiéndose una cantidad de veces dada por el ingreso.
-// Argumento de entrada en ContadorIn (r24). Valores Válidos (1:255)
+// Esta funciÃ³n hace un delay de 2ms, repitiÃ©ndose una cantidad de veces dada por el ingreso.
+// Argumento de entrada en ContadorIn (r24). Valores VÃ¡lidos (1:255)
 // ***************************************
 delay_ms:
 	push Contador1
