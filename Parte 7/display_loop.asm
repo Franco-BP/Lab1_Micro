@@ -23,7 +23,6 @@
 
 .def Contador1 = r23
 .def Contador2 = r22
-.def ContadorIn = r24
 
 .def ADCRegister = r21
 
@@ -32,28 +31,24 @@ loop:
 	ldi DigitIn, 1
 	rcall send_digit
 	// Necesitamos un delay de 2ms
-	ldi ContadorIn, 1
 	rcall delay_ms
 
 	ldi ValueIn, 2
 	ldi DigitIn, 2
 	rcall send_digit
 	// Necesitamos un delay de 2ms
-	ldi ContadorIn, 1
 	rcall delay_ms
 
 	ldi ValueIn, 1
 	ldi DigitIn, 1
 	rcall send_digit
 	//Necesitamos un delay de 2 ms
-	ldi ContadorIn, 1
 	rcall delay_ms
 	
 	ldi ValueIn, 2
 	ldi DigitIn, 2
 	rcall send_digit
 	// Necesitamos un delay de 2ms
-	ldi ContadorIn, 1
 	rcall delay_ms
 
 	rjmp loop
@@ -178,39 +173,25 @@ display_digit_value:
 
 
 // ***************************************
-// delay_x2ms
-// Esta función hace un delay de 2ms, repitiéndose una cantidad de veces dada por el ingreso.
-// Argumento de entrada en r24. Valores Válidos (1:255)
+// delay_ms
+// Esta función hace un delay de 2ms.
 // ***************************************
 delay_ms:
 	push Contador1
 	push Contador2
 	
 	ldi Contador1, 255	// 1 clk
-	ldi Contador2, 22	// 1 clk
-	// Estos 3 clks se agregan al final de la cuenta, porque no estan loopeados
+	ldi Contador2, 50	// 1 clk
 
 	loop1:
 	dec Contador1		// 1 clk - Settea el flag Z si es 0
 	
-	brne loop1	// 1/2 clk
-	// Se hace 255 veces el loop de 3 clks
+	brne loop1	// 2 clk (-1 al final)
 
-    ldi Contador1, 255	// 1 clk
-    dec Contador2		// 1 clk - Settea el flag Z si es 0
+		ldi Contador1, 255	// 1 clk
+		dec Contador2		// 1 clk - Settea el flag Z si es 0
 
 		brne loop1	// 2 clk (-1 al final)
-		// Se hace 21 veces el loop de 4 clks y repite 21 veces el ciclo anterior
-		// 16.150 clks = (aprox) 1,009ms
-
-      ldi Contador1, 255	// 1 clk
-			ldi Contador2, 21	// 1 clk
-			dec ContadorIn		// 1 clk - Settea el flag Z si es 0
-
-			brne loop1	// 1/2 clk
-			// Se hace 41 veces el loop de 5 clks y repite 41 veces el ciclo anterior de 196.095 clks
-			//El ciclo demora 8.040.100 clks = 0,5025 s
 
 	pop Contador2
 	pop Contador1
-	ret 
