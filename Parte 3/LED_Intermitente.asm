@@ -44,20 +44,16 @@ delay_ms:
 	
 	ldi Contador1, 255	// 1 clk
 	ldi Contador2, 197	// 1 clk
-	// Estos 3 clks se agregan al final de la cuenta, porque no estan loopeados
 
 	loop1:
 	dec Contador1		// 1 clk - Settea el flag Z si es 0
 	
-	brne loop1	// 1/2 clk
-	// Se hace 255 veces el loop de 3 clks
+	brne loop1	// 2 clk (-1 al final)
 
 		ldi Contador1, 255	// 1 clk
 		dec Contador2		// 1 clk - Settea el flag Z si es 0
 
 		brne loop1	// 2 clk (-1 al final)
-		// Se hace 21 veces el loop de 4 clks y repite 21 veces el ciclo anterior
-		// 16.150 clks = (aprox) 1,009ms
 
 	pop Contador2
 	pop Contador1
