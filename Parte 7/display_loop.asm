@@ -25,6 +25,8 @@
 .def Contador2 = r22
 .def ContadorIn = r24
 
+.def ADCRegister = r21
+
 loop:
 	ldi ValueIn, 1
 	ldi DigitIn, 1
@@ -91,13 +93,18 @@ send_digit:
 //	Argumento de ingreso y retorno en r16. Valores válidos (0:9)
 //**********************************************************
 value_to_ss:
+  push ADCRegister
+  ldi ADCRegister, 0
+  
 	ldi ZL, LOW(2*ss_value)
 	ldi ZH, HIGH(2*ss_value)
 
 	add ZL, ValueIn	//Agregamos el valor ingresado, para que Z apunte al valor correspondiente de la lista
-	adc ZH, 0
+	adc ZH, ADCRegister
 	
 	lpm ValueIn, Z
+  
+  pop ADCRegister
 	ret
 
 //**********************************************************
@@ -106,12 +113,17 @@ value_to_ss:
 //	Argumento de entrada y retorno en r17. Valores válidos (0:3)
 //**********************************************************
 digit_to_display:
+  push ADCRegister
+  ldi ADCRegister, 0
+
 	ldi ZL, LOW(2*display_digit_value)
 	ldi ZH, HIGH(2*display_digit_value)
 
 	add ZL, DigitIn
-	adc ZH, 0
+	adc ZH, ADCRegister
 	lpm DigitIn, Z
+  
+  pop ADCRegister
 	ret
 	
 
@@ -124,14 +136,17 @@ digit_to_display:
 send_byte:
 	push TimesCounter
 	push SerialData
+  push PortOut
+  push ADCRegister
 
 	ldi TimesCounter, 8
+  ldi ADCRegister, 0
 	
 	loadLoop:
 		clr SerialData
 
 		ror ValueIn
-		adc SerialData, 0
+		adc SerialData, ADCRegister
 
 		out PORTD, SerialData
 
@@ -140,12 +155,14 @@ send_byte:
 		out PORTD, PortOut
 		nop		//Delay necesario para evitar fallos con la carga del dato
 		nop
-		out PORTD, SerialData //(Shift_Clock XOR Shift_Clock))
+		out PORTD, SerialData //(SHIFT_CLOCK xor SHIFT_CLOCK))
 
 		dec TimesCounter
 		cpi TimesCounter, 0
 		brne loadLoop		//Finaliza el Loop luego de cargar el último bit (8 veces)
 	
+  pop ADCRegister
+  pop PortOut
 	pop SerialData
 	pop TimesCounter
 	ret
@@ -174,25 +191,22 @@ delay_ms:
 	// Estos 3 clks se agregan al final de la cuenta, porque no estan loopeados
 
 	loop1:
-	dec Contador1		// 1 clk
-	cpi Contador1, 0	// 1 clk
+	dec Contador1		// 1 clk - Settea el flag Z si es 0
 	
 	brne loop1	// 1/2 clk
 	// Se hace 255 veces el loop de 3 clks
 
-		dec Contador2		// 1 clk
-		ldi Contador1, 255	// 1 clk
+    ldi Contador1, 255	// 1 clk
+    dec Contador2		// 1 clk - Settea el flag Z si es 0
 
-		cpi Contador2, 0	// 1clk
-		brne loop1	// 1/2 clk
+		brne loop1	// 2 clk (-1 al final)
 		// Se hace 21 veces el loop de 4 clks y repite 21 veces el ciclo anterior
 		// 16.150 clks = (aprox) 1,009ms
 
-			dec ContadorIn		// 1 clk
-			ldi Contador1, 255	// 1 clk
+      ldi Contador1, 255	// 1 clk
 			ldi Contador2, 21	// 1 clk
+			dec ContadorIn		// 1 clk - Settea el flag Z si es 0
 
-			cpi ContadorIn, 0	// 1 clk
 			brne loop1	// 1/2 clk
 			// Se hace 41 veces el loop de 5 clks y repite 41 veces el ciclo anterior de 196.095 clks
 			//El ciclo demora 8.040.100 clks = 0,5025 s
