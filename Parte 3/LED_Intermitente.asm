@@ -18,7 +18,6 @@
 .def OutRegister = r20
 .def Contador1 = r23
 .def Contador2 = r22
-.def ContadorIn = r24
 
 ldi OutRegister, LED1
 out DDRB, OutRegister
@@ -26,23 +25,18 @@ out DDRB, OutRegister
 start:
 	ldi OutRegister, (LED1^LED1)
 	out PORTB, OutRegister
-	
-	ldi ContadorIn, 1
-	rcall delay_500ms
+	rcall delay_ms
     
 	ldi OutRegister, LED1
 	out PORTB, OutRegister
-	
-	ldi ContadorIn, 1
-	rcall delay_500ms
+	rcall delay_ms
     
     rjmp start
     
 
 // ***************************************
 // delay_ms
-// Esta función hace un delay de 500ms, repitiéndose una cantidad de veces dada por el ingreso.
-// Argumento de entrada en ContadorIn (r24). Valores Válidos (1:255)
+// Esta función hace un delay de 500ms.
 // ***************************************
 delay_ms:
 	push Contador1
@@ -64,14 +58,6 @@ delay_ms:
 		brne loop1	// 2 clk (-1 al final)
 		// Se hace 21 veces el loop de 4 clks y repite 21 veces el ciclo anterior
 		// 16.150 clks = (aprox) 1,009ms
-
-			ldi Contador1, 255	// 1 clk
-			ldi Contador2, 197	// 1 clk
-			dec ContadorIn		// 1 clk - Settea el flag Z si es 0
-
-			brne loop1	// 2 clk (-1 al final)
-			// Se hace 41 veces el loop de 5 clks y repite 41 veces el ciclo anterior de 196.095 clks
-			//El ciclo demora 8.040.100 clks = 0,5025 s
 
 	pop Contador2
 	pop Contador1
