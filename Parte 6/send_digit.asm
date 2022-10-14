@@ -10,15 +10,14 @@
 .equ B5 = (1<<5)
 .equ B6 = (1<<6) 
 .equ B7 = (1<<7) 
+.equ SHIFT_CLOCK = B1
+.equ LATCH_CLOCK = B4
 
 .def ValueIn = r16
 .def DigitIn = r17
 
 .def TimesCounter = r17
 .def SerialData = r18		// SDI = B0 // Serial Ck = B1 // Latch Ck = B4
-.equ Shift_Clock = B1
-.equ Latch_Clock = B4
-
 
 //*********************************************
 //	send_digit
@@ -39,7 +38,8 @@ send_digit:
 	mov r16, r17
 	rcall send_byte
 
-	out PORTD, Latch_Clock
+	ldi PortOut, LATCH_CLOCK
+	out PORTD, PortOut
 
 	end:
 		ret
@@ -52,13 +52,18 @@ send_digit:
 //	Argumento de ingreso y retorno en r16. Valores válidos (0:9)
 //**********************************************************
 value_to_ss:
+  push ADCRegister
+  ldi ADCRegister, 0
+  
 	ldi ZL, LOW(2*ss_value)
 	ldi ZH, HIGH(2*ss_value)
 
 	add ZL, ValueIn	//Agregamos el valor ingresado, para que Z apunte al valor correspondiente de la lista
-	adc ZH, 0
+	adc ZH, ADCRegister
 	
 	lpm ValueIn, Z
+  
+  pop ADCRegister
 	ret
 
 //**********************************************************
@@ -67,12 +72,17 @@ value_to_ss:
 //	Argumento de entrada y retorno en r17. Valores válidos (0:3)
 //**********************************************************
 digit_to_display:
+  push ADCRegister
+  ldi ADCRegister, 0
+
 	ldi ZL, LOW(2*display_digit_value)
 	ldi ZH, HIGH(2*display_digit_value)
 
 	add ZL, DigitIn
-	adc ZH, 0
+	adc ZH, ADCRegister
 	lpm DigitIn, Z
+  
+  pop ADCRegister
 	ret
 	
 
@@ -85,32 +95,42 @@ digit_to_display:
 send_byte:
 	push TimesCounter
 	push SerialData
+	push PortOut
+	push ADCRegister
 
 	ldi TimesCounter, 8
+	ldi ADCRegister, 0
 	
 	loadLoop:
 		clr SerialData
 
 		ror ValueIn
-		adc SerialData, 0
+		adc SerialData, ADCRegister
 
 		out PORTD, SerialData
-		out PORTD, (SerialData + Shift_Clock)
+
+		ldi PortOut, SHIFT_CLOCK
+		OR PortOut, SerialData
+		out PORTD, PortOut
 		nop		//Delay necesario para evitar fallos con la carga del dato
 		nop
-		out PORTD, (SerialData + (Shift_Clock XOR Shift_Clock))
+		out PORTD, SerialData //(SHIFT_CLOCK xor SHIFT_CLOCK))
 
 		dec TimesCounter
 		cpi TimesCounter, 0
 		brne loadLoop		//Finaliza el Loop luego de cargar el último bit (8 veces)
 	
+  pop ADCRegister
+  pop PortOut
 	pop SerialData
 	pop TimesCounter
 	ret
 
 
-ss_value:		//Código en hexa correspondiente al display de cada número (0:9 o 10 para borrar)
-	.db 0x03, 0x9F, 0x25, 0x0D, 0x99, 0x49, 0x41, 0x1F, 0x01, 0x19, 0xFF
+//Código en hexa correspondiente al display de cada número (0:9 o 10 para borrar)
+ss_value:
+	.db 0x03, 0x9F, 0x25, 0x0D, 0x99, 0x49, 0x41, 0x1F, 0x01, 0x19, 0xFF, 0x00	//Se agrega 0x00 para evitar padding
 
-display_digit_value:	//Código en hexa correspondiente al dígito (1:4)
+//Código en hexa correspondiente al dígito (1:4)
+display_digit_value:
 	.db 0x80, 0x40, 0x20, 0x10
