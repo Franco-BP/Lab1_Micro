@@ -21,7 +21,7 @@
 .def OutRegister = r20
 .def Contador1 = r23
 .def Contador2 = r22
-.def Contador3 = r21
+.def ContadorIn = r24
 
 ldi OutRegister, (LED1)
 out DDRB, OutRegister
@@ -35,8 +35,8 @@ out DDRC, Read
 
 encendido:
 	ldi OutRegister, (~LED1)
-    out PORTB, OutRegister
-    rcall delay_1s
+	out PORTB, OutRegister
+	rcall delay_1s
 
 	in Read, PINC
 	andi Read, S1
@@ -44,8 +44,8 @@ encendido:
 	breq apagar
 
 	ldi OutRegister, 0xFF
-    out PORTB, OutRegister
-    rcall delay_1s
+	out PORTB, OutRegister
+	rcall delay_1s
 
 	in Read, PINC 
 	andi Read, S1
@@ -82,7 +82,7 @@ apagar:
 
 encender:
 	ldi OutRegister, (~LED1)
-    out PORTB, OutRegister
+ 	out PORTB, OutRegister
 	encenderloop:
 		in Read, PINC 
 		andi Read, S1
@@ -99,45 +99,35 @@ encender:
 ////////////////////////////////////////////
 
 // ***************************************
-// delay_1s
+// delay_ms
 // Esta función hace un delay de 1s.
-// Sin argumento de entrada.
 // ***************************************
 delay_1s:
 	push Contador1
 	push Contador2
-	push Contador3
+	push ContadorIn
 	
+	ldi ContadorIn, 2
 	ldi Contador1, 255	// 1 clk
-	ldi Contador2, 255	// 1 clk
-	ldi Contador3, 82	// 1 clk
-	// Estos 3 clks se agregan al final de la cuenta, porque no estan loopeados
+	ldi Contador2, 197	// 1 clk
 
 	loop1:
-	dec Contador1		// 1 clk
-	cpi Contador1, 0	// 1 clk
+	dec Contador1		// 1 clk - Settea el flag Z si es 0
 	
-	brne loop1	// 1/2 clk
-	// Se hace 255 veces el loop de 3 clks
+	brne loop1	// 2 clk (-1 al final)
 
-		dec Contador2		// 1 clk
 		ldi Contador1, 255	// 1 clk
+		dec Contador2		// 1 clk - Settea el flag Z si es 0
 
-		cpi Contador2, 0	// 1clk
-		brne loop1	// 1/2 clk
-		// Se hace 255 veces el loop de 4 clks y repite 255 veces el ciclo anterior
-		// 196.095 clks
+		brne loop1	// 2 clk (-1 al final)
 
-			dec Contador3		// 1 clk
 			ldi Contador1, 255	// 1 clk
-			ldi Contador2, 255	// 1 clk
+			ldi Contador2, 197	// 1 clk
+			dec ContadorIn		// 1 clk - Settea el flag Z si es 0
 
-			cpi Contador3, 0	// 1 clk
-			brne loop1	// 1/2 clk
-			// Se hace 82 veces el loop de 5 clks y repite 82 veces el ciclo anterior de 196.095 clks
-			//El delay demora 16.080.200clks = 1,05s (aprox)
-	
-	pop Contador3
+			brne loop1	// 2 clk (-1 al final)
+
+	pop ContadorIn
 	pop Contador2
 	pop Contador1
 	ret 
