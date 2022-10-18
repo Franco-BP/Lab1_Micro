@@ -23,7 +23,6 @@
 
 .def Contador1 = r23
 .def Contador2 = r22
-.def ContadorIn = r24
 
 .def ADCRegister = r21
 
@@ -32,28 +31,24 @@ loop:
 	ldi DigitIn, 1
 	rcall send_digit
 	// Necesitamos un delay de 2ms
-	ldi ContadorIn, 1
 	rcall delay_ms
 
 	ldi ValueIn, 2
 	ldi DigitIn, 2
 	rcall send_digit
 	// Necesitamos un delay de 2ms
-	ldi ContadorIn, 1
 	rcall delay_ms
 
 	ldi ValueIn, 1
 	ldi DigitIn, 1
 	rcall send_digit
 	//Necesitamos un delay de 2 ms
-	ldi ContadorIn, 1
 	rcall delay_ms
 	
 	ldi ValueIn, 2
 	ldi DigitIn, 2
 	rcall send_digit
 	// Necesitamos un delay de 2ms
-	ldi ContadorIn, 1
 	rcall delay_ms
 
 	rjmp loop
@@ -81,6 +76,8 @@ send_digit:
 
 	ldi PortOut, LATCH_CLOCK
 	out PORTD, PortOut
+	ldi PortOut, 0
+	out PORTD, PortOut
 
 	end:
 		ret
@@ -93,8 +90,8 @@ send_digit:
 //	Argumento de ingreso y retorno en r16. Valores válidos (0:9)
 //**********************************************************
 value_to_ss:
-  push ADCRegister
-  ldi ADCRegister, 0
+	push ADCRegister
+	ldi ADCRegister, 0
   
 	ldi ZL, LOW(2*ss_value)
 	ldi ZH, HIGH(2*ss_value)
@@ -104,7 +101,7 @@ value_to_ss:
 	
 	lpm ValueIn, Z
   
-  pop ADCRegister
+	pop ADCRegister
 	ret
 
 //**********************************************************
@@ -179,15 +176,14 @@ display_digit_value:
 
 // ***************************************
 // delay_ms
-// Esta función hace un delay de 2ms, repitiéndose una cantidad de veces dada por el ingreso.
-// Argumento de entrada en ContadorIn (r24). Valores Válidos (1:255)
+// Esta función hace un delay de 2ms.
 // ***************************************
 delay_ms:
 	push Contador1
 	push Contador2
 	
 	ldi Contador1, 255	// 1 clk
-	ldi Contador2, 50	// 1 clk
+	ldi Contador2, 30	// 1 clk
 
 	loop1:
 	dec Contador1		// 1 clk - Settea el flag Z si es 0
@@ -198,12 +194,6 @@ delay_ms:
 		dec Contador2		// 1 clk - Settea el flag Z si es 0
 
 		brne loop1	// 2 clk (-1 al final)
-
-			ldi Contador1, 255	// 1 clk
-			ldi Contador2, 41	// 1 clk
-			dec ContadorIn		// 1 clk - Settea el flag Z si es 0
-
-			brne loop1	// 2 clk (-1 al final)
 
 	pop Contador2
 	pop Contador1
