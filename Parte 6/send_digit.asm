@@ -16,8 +16,11 @@
 .def ValueIn = r16
 .def DigitIn = r17
 
-.def TimesCounter = r17
-.def SerialData = r18		// SDI = B0 // Serial Ck = B1 // Latch Ck = B4
+.def PortOut = r20
+.def ADCRegister = r21
+
+.def TimesCounter = r18
+.def SerialData = r19		// SDI = B0 // Serial Ck = B1 // Latch Ck = B4
 
 //*********************************************
 //	send_digit
@@ -39,6 +42,8 @@ send_digit:
 	rcall send_byte
 
 	ldi PortOut, LATCH_CLOCK
+	out PORTD, PortOut
+	ldi PortOut, 0
 	out PORTD, PortOut
 
 	end:
