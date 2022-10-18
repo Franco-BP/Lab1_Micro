@@ -24,6 +24,7 @@
 .def OutRegister = r20
 .def Contador1 = r23
 .def Contador2 = r22
+.def Contador3 = r21
 
 ldi OutRegister, (LED1 + LED2 + LED3 + LED4)
 out DDRB, OutRegister
@@ -41,7 +42,7 @@ start1:
 
 	in Read, PINC // Leo Puerto C (la entrada)
 	andi Read, S1
-	cpi Read, 2
+	cpi Read, 0
 	breq op1
 
 start2:
@@ -51,7 +52,7 @@ start2:
 
 	in Read, PINC // Leo Puerto C (la entrada)
 	andi Read, S1
-	cpi Read, 2
+	cpi Read, 0
 	breq op4
 
 start3:
@@ -61,7 +62,7 @@ start3:
 
 	in Read, PINC // Leo Puerto C (la entrada)
 	andi Read, S1
-	cpi Read, 2
+	cpi Read, 0
 	breq op3
 
 start4:
@@ -71,7 +72,7 @@ start4:
 
 	in Read, PINC // Leo Puerto C (la entrada)
 	andi Read, S1
-	cpi Read, 2
+	cpi Read, 0
 	breq op2
 
     rjmp start1
@@ -133,9 +134,11 @@ op4:
 delay_ms:
 	push Contador1
 	push Contador2
+	push Contador3
 	
 	ldi Contador1, 255	// 1 clk
-	ldi Contador2, 197	// 1 clk
+	ldi Contador2, 255	// 1 clk
+	ldi Contador3, 41
 
 	loop1:
 	dec Contador1		// 1 clk - Settea el flag Z si es 0
@@ -146,7 +149,15 @@ delay_ms:
 		dec Contador2		// 1 clk - Settea el flag Z si es 0
 
 		brne loop1	// 2 clk (-1 al final)
+			
+			ldi Contador1, 255
+			ldi Contador2, 255
+			dec Contador3
 
+			brne loop1
+
+	pop Contador3
 	pop Contador2
 	pop Contador1
 	ret 
+
