@@ -21,7 +21,7 @@
 .def OutRegister = r20
 .def Contador1 = r23
 .def Contador2 = r22
-.def ContadorIn = r24
+.def Contador3 = r24
 
 ldi OutRegister, (LED1)
 out DDRB, OutRegister
@@ -66,7 +66,7 @@ apagado:
 
 
 /////////////////////////////////////////////////
-/////////////// Trancisiones ////////////////////
+/////////////// Transiciones ////////////////////
 /////////////////////////////////////////////////
 apagar:
 	ldi OutRegister, 0xFF
@@ -105,11 +105,11 @@ encender:
 delay_1s:
 	push Contador1
 	push Contador2
-	push ContadorIn
+	push Contador3
 	
-	ldi ContadorIn, 2
 	ldi Contador1, 255	// 1 clk
-	ldi Contador2, 197	// 1 clk
+	ldi Contador2, 255	// 1 clk
+	ldi Contador3, 82
 
 	loop1:
 	dec Contador1		// 1 clk - Settea el flag Z si es 0
@@ -120,14 +120,15 @@ delay_1s:
 		dec Contador2		// 1 clk - Settea el flag Z si es 0
 
 		brne loop1	// 2 clk (-1 al final)
+			
+			ldi Contador1, 255
+			ldi Contador2, 255
+			dec Contador3
 
-			ldi Contador1, 255	// 1 clk
-			ldi Contador2, 197	// 1 clk
-			dec ContadorIn		// 1 clk - Settea el flag Z si es 0
+			brne loop1
 
-			brne loop1	// 2 clk (-1 al final)
-
-	pop ContadorIn
+	pop Contador3
 	pop Contador2
 	pop Contador1
 	ret 
+
