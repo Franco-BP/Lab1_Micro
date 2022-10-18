@@ -1,4 +1,4 @@
-;
+
 ; Send_digit.asm
 ;
 
@@ -11,8 +11,10 @@
 .equ B6 = (1<<6) 
 .equ B7 = (1<<7) 
 
-.equ SHIFT_CLOCK = B1	// SDI = B0 // Serial Ck = B1 // Latch Ck = B4
-.equ LATCH_CLOCK = B4
+.equ SHIFT_CLOCK = B7	// PORT D
+.equ LATCH_CLOCK = B4	// PORT D
+
+.equ SERIAL_DATA = B0	//PORT B
 
 .def PortOut = r20
 .def ValueIn = r16
@@ -26,30 +28,42 @@
 
 .def ADCRegister = r21
 
+	.org 0
+	jmp start
+
+start:
+ldi PortOut, (SHIFT_CLOCK | LATCH_CLOCK | SERIAL_DATA)
+out DDRD, PortOut
+
+ldi PortOut, SERIAL_DATA
+out DDRB, PortOut
+
 loop:
 	ldi ValueIn, 1
-	ldi DigitIn, 1
-	rcall send_digit
+	ldi DigitIn, 3
+	call send_digit
 	// Necesitamos un delay de 2ms
-	rcall delay_ms
+	call delay_ms
 
 	ldi ValueIn, 2
-	ldi DigitIn, 2
-	rcall send_digit
+	ldi DigitIn, 4
+	call send_digit
 	// Necesitamos un delay de 2ms
-	rcall delay_ms
+	call delay_ms
+
+loop2:	rjmp loop
 
 	ldi ValueIn, 1
-	ldi DigitIn, 1
-	rcall send_digit
+	ldi DigitIn, 3
+	call send_digit
 	//Necesitamos un delay de 2 ms
-	rcall delay_ms
+	call delay_ms
 	
 	ldi ValueIn, 2
-	ldi DigitIn, 2
-	rcall send_digit
+	ldi DigitIn, 4
+	call send_digit
 	// Necesitamos un delay de 2ms
-	rcall delay_ms
+	call delay_ms
 
 	rjmp loop
 
@@ -71,11 +85,13 @@ send_digit:
 	rcall send_byte		//ingreso en r16
 
 	rcall digit_to_display	//ingreso y retorno en r17
-	mov r16, r17
+	mov r16, DigitIn
 	rcall send_byte
 
 	ldi PortOut, LATCH_CLOCK
 	out PORTD, PortOut
+	nop
+	nop
 	ldi PortOut, 0
 	out PORTD, PortOut
 
@@ -140,19 +156,19 @@ send_byte:
 	ldi ADCRegister, 0
 	
 	loadLoop:
-		clr SerialData
+		ldi SerialData, 0
 
 		ror ValueIn
 		adc SerialData, ADCRegister
 
-		out PORTD, SerialData
+		out PORTB, SerialData
 
 		ldi PortOut, SHIFT_CLOCK
-		OR PortOut, SerialData
 		out PORTD, PortOut
 		nop		//Delay necesario para evitar fallos con la carga del dato
 		nop
-		out PORTD, SerialData //(SHIFT_CLOCK xor SHIFT_CLOCK))
+		ldi PortOut, 0	//(SHIFT_CLOCK xor SHIFT_CLOCK))
+		out PORTD, PortOut
 
 		dec TimesCounter
 		cpi TimesCounter, 0
@@ -184,7 +200,7 @@ delay_ms:
 	
 	ldi Contador1, 255	// 1 clk
 	ldi Contador2, 30	// 1 clk
-
+	
 	loop1:
 	dec Contador1		// 1 clk - Settea el flag Z si es 0
 	
