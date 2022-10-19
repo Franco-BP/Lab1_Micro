@@ -1,5 +1,5 @@
 ;
-; Send_digit.asm
+; Contador_Display.asm
 ;
 
 .equ B0 = (1<<0)
@@ -11,8 +11,10 @@
 .equ B6 = (1<<6) 
 .equ B7 = (1<<7) 
 
-.equ SHIFT_CLOCK = B1	// SDI = B0 // Serial Ck = B1 // Latch Ck = B4
-.equ LATCH_CLOCK = B4
+.equ SHIFT_CLOCK = B7	// PORT D
+.equ LATCH_CLOCK = B4	// PORT D
+.equ SERIAL_DATA = B0	//PORT B
+
 
 .def PortOut = r20
 .def ValueIn = r16
@@ -21,43 +23,109 @@
 .def TimesCounter = r19
 .def SerialData = r18
 
-.def Contador1 = r23
-.def Contador2 = r22
-.def ContadorIn = r24
+.def Contador1 = r25	//En delay tiene push, no interfiere con el programa
+.def Contador2 = r22	//No interfiere con otros .def
+.def ADCRegister = r21	//No interfiere con otros .def
 
-.def ADCRegister = r21
+.def Unidad = r21
+.def Decena = r22
+.def Centena = r23
+.def UMil = r24
+
+	.org 0
+	jmp start
+
+start:
+ldi PortOut, (SHIFT_CLOCK | LATCH_CLOCK | SERIAL_DATA)
+out DDRD, PortOut
+
+ldi PortOut, SERIAL_DATA
+out DDRB, PortOut
+
+ldi Contador1, 0
+ldi Unidad, 0
+ldi Decena, 0
+ldi Centena, 0
+ldi UMil, 0
 
 loop:
-	ldi ValueIn, 1
+	mov ValueIn, UMil
 	ldi DigitIn, 1
-	rcall send_digit
+	call send_digit
 	// Necesitamos un delay de 2ms
-	ldi ContadorIn, 1
-	rcall delay_ms
+	call delay_ms
 
-	ldi ValueIn, 2
+	mov ValueIn, Centena
 	ldi DigitIn, 2
-	rcall send_digit
+	call send_digit
 	// Necesitamos un delay de 2ms
-	ldi ContadorIn, 1
-	rcall delay_ms
+	call delay_ms
 
-	ldi ValueIn, 1
-	ldi DigitIn, 1
-	rcall send_digit
+	mov ValueIn, Decena
+	ldi DigitIn, 3
+	call send_digit
 	//Necesitamos un delay de 2 ms
-	ldi ContadorIn, 1
-	rcall delay_ms
+	call delay_ms
 	
-	ldi ValueIn, 2
-	ldi DigitIn, 2
-	rcall send_digit
+	mov ValueIn, Unidad
+	ldi DigitIn, 4
+	call send_digit
 	// Necesitamos un delay de 2ms
-	ldi ContadorIn, 1
-	rcall delay_ms
+	call delay_ms
 
+	inc Contador1
+	cpi Contador1, 62
+	brlt loop_end
+
+	rcall increase_counter
+	ldi Contador1, 0
+
+loop_end:
 	rjmp loop
 
+//*********************************************
+//	increase_counter
+//	Incrementa un contador ingresado en unidad, decena, centena y unidad de mil.
+//	Argumentos de entrada crecientes: r21, r22, r23, r24.
+//*********************************************
+
+increase_counter:
+	inc Unidad
+	cpi Unidad, 10
+	brge carry_unidad
+	ret
+
+carry_unidad:
+	ldi Unidad, 0
+	inc Decena
+
+	cpi Decena, 10
+	brge carry_decena
+	ret
+
+carry_decena:
+	ldi Decena, 0
+	inc Centena
+
+	cpi Centena, 10
+	brge carry_centena
+	ret
+
+carry_centena:
+	ldi Centena, 0
+	inc UMil
+
+	cpi UMil, 10
+	brge clear_counter
+	ret
+
+
+clear_counter:
+	ldi Unidad, 0
+	ldi Decena, 0
+	ldi Centena, 0
+	ldi UMil, 0
+	ret
 
 
 //*********************************************
@@ -76,10 +144,14 @@ send_digit:
 	rcall send_byte		//ingreso en r16
 
 	rcall digit_to_display	//ingreso y retorno en r17
-	mov r16, r17
+	mov r16, DigitIn
 	rcall send_byte
 
 	ldi PortOut, LATCH_CLOCK
+	out PORTD, PortOut
+	nop
+	nop
+	ldi PortOut, 0
 	out PORTD, PortOut
 
 	end:
@@ -93,8 +165,8 @@ send_digit:
 //	Argumento de ingreso y retorno en r16. Valores válidos (0:9)
 //**********************************************************
 value_to_ss:
-  push ADCRegister
-  ldi ADCRegister, 0
+	push ADCRegister
+	ldi ADCRegister, 0
   
 	ldi ZL, LOW(2*ss_value)
 	ldi ZH, HIGH(2*ss_value)
@@ -104,7 +176,7 @@ value_to_ss:
 	
 	lpm ValueIn, Z
   
-  pop ADCRegister
+	pop ADCRegister
 	ret
 
 //**********************************************************
@@ -136,26 +208,26 @@ digit_to_display:
 send_byte:
 	push TimesCounter
 	push SerialData
-  push PortOut
-  push ADCRegister
+	push PortOut
+	push ADCRegister
 
 	ldi TimesCounter, 8
-  ldi ADCRegister, 0
+	ldi ADCRegister, 0
 	
 	loadLoop:
-		clr SerialData
+		ldi SerialData, 0
 
 		ror ValueIn
 		adc SerialData, ADCRegister
 
-		out PORTD, SerialData
+		out PORTB, SerialData
 
 		ldi PortOut, SHIFT_CLOCK
-		OR PortOut, SerialData
 		out PORTD, PortOut
 		nop		//Delay necesario para evitar fallos con la carga del dato
 		nop
-		out PORTD, SerialData //(SHIFT_CLOCK xor SHIFT_CLOCK))
+		ldi PortOut, 0	//(SHIFT_CLOCK xor SHIFT_CLOCK))
+		out PORTD, PortOut
 
 		dec TimesCounter
 		cpi TimesCounter, 0
@@ -178,39 +250,26 @@ display_digit_value:
 
 
 // ***************************************
-// delay_x2ms
-// Esta función hace un delay de 2ms, repitiéndose una cantidad de veces dada por el ingreso.
-// Argumento de entrada en r24. Valores Válidos (1:255)
+// delay_ms
+// Esta función hace un delay de 2ms.
 // ***************************************
 delay_ms:
 	push Contador1
 	push Contador2
 	
 	ldi Contador1, 255	// 1 clk
-	ldi Contador2, 22	// 1 clk
-	// Estos 3 clks se agregan al final de la cuenta, porque no estan loopeados
-
+	ldi Contador2, 40	// 1 clk
+	
 	loop1:
 	dec Contador1		// 1 clk - Settea el flag Z si es 0
 	
 	brne loop1	// 1/2 clk
-	// Se hace 255 veces el loop de 3 clks
 
-    ldi Contador1, 255	// 1 clk
-    dec Contador2		// 1 clk - Settea el flag Z si es 0
+		ldi Contador1, 255	// 1 clk
+		dec Contador2		// 1 clk - Settea el flag Z si es 0
 
 		brne loop1	// 2 clk (-1 al final)
-		// Se hace 21 veces el loop de 4 clks y repite 21 veces el ciclo anterior
-		// 16.150 clks = (aprox) 1,009ms
-
-      ldi Contador1, 255	// 1 clk
-			ldi Contador2, 21	// 1 clk
-			dec ContadorIn		// 1 clk - Settea el flag Z si es 0
-
-			brne loop1	// 1/2 clk
-			// Se hace 41 veces el loop de 5 clks y repite 41 veces el ciclo anterior de 196.095 clks
-			//El ciclo demora 8.040.100 clks = 0,5025 s
 
 	pop Contador2
 	pop Contador1
-	ret 
+	ret
