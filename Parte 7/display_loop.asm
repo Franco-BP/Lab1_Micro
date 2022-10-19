@@ -195,7 +195,7 @@ delay_ms:
 	push Contador2
 	
 	ldi Contador1, 255	// 1 clk
-	ldi Contador2, 30	// 1 clk
+	ldi Contador2, 40	// 1 clk
 	
 	loop1:
 	dec Contador1		// 1 clk - Settea el flag Z si es 0
