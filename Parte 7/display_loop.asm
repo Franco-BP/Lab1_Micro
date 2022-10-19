@@ -1,5 +1,5 @@
-
-; Send_digit.asm
+;
+; Display_Loop.asm
 ;
 
 .equ B0 = (1<<0)
@@ -13,7 +13,6 @@
 
 .equ SHIFT_CLOCK = B7	// PORT D
 .equ LATCH_CLOCK = B4	// PORT D
-
 .equ SERIAL_DATA = B0	//PORT B
 
 .def PortOut = r20
@@ -23,9 +22,8 @@
 .def TimesCounter = r19
 .def SerialData = r18
 
-.def Contador1 = r23
+.def Contador1 = r25
 .def Contador2 = r22
-
 .def ADCRegister = r21
 
 	.org 0
@@ -50,8 +48,6 @@ loop:
 	call send_digit
 	// Necesitamos un delay de 2ms
 	call delay_ms
-
-loop2:	rjmp loop
 
 	ldi ValueIn, 1
 	ldi DigitIn, 3
