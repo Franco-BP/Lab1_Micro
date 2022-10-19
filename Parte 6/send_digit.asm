@@ -1,5 +1,5 @@
 ;
-; Send_digit.asm
+; Send_Digit.asm
 ;
 
 .equ B0 = (1<<0)
@@ -10,17 +10,19 @@
 .equ B5 = (1<<5)
 .equ B6 = (1<<6) 
 .equ B7 = (1<<7) 
-.equ SHIFT_CLOCK = B1
-.equ LATCH_CLOCK = B4
 
+.equ SHIFT_CLOCK = B7	//Port D
+.equ LATCH_CLOCK = B4	//Port D
+.equ SERIAL_DATA = B0	//Port B
+
+.def PortOut = r20
 .def ValueIn = r16
 .def DigitIn = r17
 
-.def PortOut = r20
 .def ADCRegister = r21
 
 .def TimesCounter = r18
-.def SerialData = r19		// SDI = B0 // Serial Ck = B1 // Latch Ck = B4
+.def SerialData = r19
 
 //*********************************************
 //	send_digit
@@ -107,19 +109,19 @@ send_byte:
 	ldi ADCRegister, 0
 	
 	loadLoop:
-		clr SerialData
+		ldi SerialData, 0
 
 		ror ValueIn
 		adc SerialData, ADCRegister
 
-		out PORTD, SerialData
+		out PORTB, SerialData
 
 		ldi PortOut, SHIFT_CLOCK
-		OR PortOut, SerialData
 		out PORTD, PortOut
 		nop		//Delay necesario para evitar fallos con la carga del dato
 		nop
-		out PORTD, SerialData //(SHIFT_CLOCK xor SHIFT_CLOCK))
+		ldi PortOut, 0
+		out PORTD, PortOut //(SHIFT_CLOCK xor SHIFT_CLOCK))
 
 		dec TimesCounter
 		cpi TimesCounter, 0
