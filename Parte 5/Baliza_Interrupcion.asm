@@ -25,10 +25,11 @@
 .def Invert = r23
 
 		.org	0
-		jmp		apagado			;Reset Vector  (note jmp 2 words rjmp 1 word)
+		jmp		start			;Reset Vector  (note jmp 2 words rjmp 1 word)
 		.org	PCI1addr
 		jmp		PCI1_IRQSRV		;PCI1 (ISR for Por C) Vector
-
+		
+start:
 	ldi OutRegister, (LED1)
 	out DDRB, OutRegister
 
@@ -85,7 +86,7 @@ PCI1_IRQSRV:
 
 	in  r17, PINC		// Check for rising edge
 	andi r17, S1
-	brne	endisr		// Rising edge
+	breq	endisr		// Rising edge
 
 
 toggle:	
