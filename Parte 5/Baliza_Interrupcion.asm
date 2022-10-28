@@ -60,17 +60,24 @@ apagado:
 apagadoloop:
 	nop		//Para saturar menos la cpu colocamos dos nop
 	nop
+	cp ChangeState, 0
+	brne encendido
 	rjmp apagadoloop
 
 encendido:
 	ldi OutRegister, (~LED1)
 	out PORTB, OutRegister
 	rcall delay_1s
+	
+	cp ChangeState, 0
+	breq apagado
 
 	ldi OutRegister, 0xFF
 	out PORTB, OutRegister
 	rcall delay_1s
 
+	cp ChangeState, 0
+	breq apagado
 	rjmp encendido
 
 
@@ -88,27 +95,17 @@ PCI1_IRQSRV:
 	andi r17, S1
 	breq	endisr		// Rising edge
 
-
 toggle:	
-	ldi ZL, LOW(2*transiciones)
-	ldi ZH, HIGH(2*transiciones)
-
 	ldi Invert, 1
 	eor ChangeState, Invert
-//Se necesita un registro para el ADC y se reutiliza el registro para evitar sobrecargar los push, pop
-	ldi Invert, 0
-
-	add ChangeState, ChangeState	//Se incrementa a 2 o se mantiene en 0 para cambiar el puntero
-	add ZL, ChangeState
-	adc ZH, Invert
-
+	
 endisr:
 	pop Invert
 	pop r17
 	pop Read
 	out SREG, Read
 
-	ijmp
+	reti
 
 
 
@@ -149,8 +146,3 @@ delay_1s:
 	pop Contador2
 	pop Contador1
 	ret 
-
-
-transiciones:
-	.dw	apagado, encendido
-					
